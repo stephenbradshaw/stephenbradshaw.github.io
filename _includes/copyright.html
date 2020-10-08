@@ -1,0 +1,6 @@
+<p>
+  &copy; {{ site.time | date: '%Y' }}.
+  {% if site.license %}
+  <a href="{{ "/LICENSE.md" | relative_url }}">{{ site.license }}.</a>
+  {% endif %}
+</p>

@@ -1,0 +1,15 @@
+---
+layout: post
+title: GDB Extensions 1.10
+date: '2014-03-23T14:16:00.000+11:00'
+author: Stephen Bradshaw
+tags:
+- debugging
+- software
+modified_time: '2014-03-23T14:17:00.223+11:00'
+blogger_id: tag:blogger.com,1999:blog-2318886372568084567.post-5028848005638504165
+blogger_orig_url: http://www.thegreycorner.com/2014/03/gdb-extensions-110.html
+redirect_from: /2014/03/gdb-extensions-110.html
+---
+
+Here's a new version (1.10) of my gdb extensions.  See the original post <a href="http://www.thegreycorner.com/2013/10/my-python-gdb-extensions.html" target="_blank">here</a> to read about what they are and what they do. <br/><br/>Changes: <br/><ul><li>Many bug fixes (oh so many bugfixes)</li><li>The fifo files for the fifodisplay command have been moved off to the /tmp/ directory instead of the present working directory.  There's a variable near the top of the script you can change to move this elsewhere if desired</li><li>The fifodisplay command now has a more functional "stop" feature that cleans up the fifo files and properly removes the gdb stop handler</li><li>The 'stop' feature of fifodisplay will also run automatically on an exited gdb event, cleaning up after itself when (for example) you finish your gdb session</li><li>The fifodisplay command has been modified to be a bit easier to use.  It now prompts you to create the appropriate fifo listeners when the command is first run</li><li>A new 'printextensionhelp' command has been added to print out a list of all the commands added with the extension, as well as the purpose of each command</li></ul><br/>Thanks to deathjest3r who provided some of the suggestions for improvement that have made it into this new version. <br/><br/><a href="https://sites.google.com/site/lupingreycorner/sb-gdb-extensions-1.10.py?attredirects=0&amp;d=1">Download link.</a> 

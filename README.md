@@ -1,2 +1,2 @@
-# stephenbradshaw.github.io
-Website
+# blog
+Blog

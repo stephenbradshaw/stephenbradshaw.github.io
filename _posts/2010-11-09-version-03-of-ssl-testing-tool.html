@@ -1,0 +1,15 @@
+---
+layout: post
+title: Version 0.3 of SSL Testing Tool ssltest.pl
+date: '2010-11-09T20:43:00.000+11:00'
+author: Stephen Bradshaw
+tags:
+- ssltest
+- software
+modified_time: '2010-12-15T14:04:58.488+11:00'
+blogger_id: tag:blogger.com,1999:blog-2318886372568084567.post-8923831905875407177
+blogger_orig_url: http://www.thegreycorner.com/2010/11/version-03-of-ssl-testing-tool.html
+redirect_from: /2010/11/version-03-of-ssl-testing-tool.html
+---
+
+I have released a new version of ssltest.pl - version 0.3.  This new version has two changes from version 0.2:<br/><ul><li>The tool now checks to see that it can make a connection to the provided host and port before it performs all of its SSL tests.  This will allow you to differentiate a non listening socket or non working network connection from an SSL service that supports no ciphers (mostly there to remind you when you mistype the hostname/port or when the service is down).  Thanks to Gitsnik for suggesting this (months ago...).</li><li>The tool now implements some crude detection for sites that allow an SSL connection using weak ciphers exclusively to provide "friendly" advice to the end user to upgrade their browser.  In response to a comment from Anton <a href="http://grey-corner.blogspot.com/2010/07/ssl-testing-tool-ssltestpl.html?showComment=1289213089783#c335016298374757634">here</a>.  Basically, I make a simple HTTP 1.1 request over any SSL socket that gets established, check the response for a "401 Unauthorized" response, and treat as unsupported any associated ciphers.  Im reasonably sure that this response should not be generated when authentication is required to access the web resource (that <i>should</i> be "401 Authorization Required"), but just in case the tool will tell you when it considers one or more ciphers to be unsupported because of this reason, and it will give you instructions on how to get more information to confirm.  If this causes false negatives, let me know so I can resolve the issue.  This new feature can also be disabled using the -f switch if it causes problems - see the help for more information.</li></ul><br/>Download below - this link will always point to the latest version of the tool:<br/><ul><li> <a href="http://sites.google.com/site/lupingreycorner/ssltest.pl">ssltest.pl</a></li></ul>
