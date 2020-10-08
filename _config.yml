@@ -24,16 +24,15 @@ highlighter:      rouge
 
 title: The Grey Corner
 tagline: "Stuff"
-#email: your-email@example.com
 description: >- # this means to ignore newlines until "baseurl:"
-  Stephen Bradshaw's website  
+  Stephen Bradshaw's blog about pentesting and computer security  
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: SM_Bradshaw
 github_username:  stephenbradshaw
 author: 
   name: Stephen Bradshaw
-  url: github.com/stephenbradshaw
+  #url: github.com/stephenbradshaw
 
 
 # configure these to enable disqus
