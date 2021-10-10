@@ -47,7 +47,9 @@ author:
 # theme: jekyll-theme-dinky
 
 # https://github.com/fongandrew/hydeout
-remote_theme: fongandrew/hydeout
+remote_theme: erikh/hydeout
+#remote_theme: dbtek/dbyll
+
 
 plugins:
   - jekyll-feed
