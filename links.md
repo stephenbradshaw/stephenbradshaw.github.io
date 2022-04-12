@@ -4,20 +4,9 @@ title: Links
 sidebar_link: true
 ---
 
-While I work out how to get a nice blogroll going on a static site generated site, Ive copied the sites from my old blogroll into a list of links below.
+Most of the blogs I follow have RSS feeds and are referenced in the feedreader [here](/offsecfeed/). Those that dont are linked below.
 
-
-* [Google Project Zero](https://googleprojectzero.blogspot.com/)
-* [Didier Stevens](https://blog.didierstevens.com/)
-* [Mubix](https://malicious.link/post/)
-* [Portswigger](https://portswigger.net/blog)
-* [NetSPI](https://blog.netspi.com/)
-* [Silent Signal](https://blog.silentsignal.eu/)
-* [Minded Security](https://blog.mindedsecurity.com/)
-* [Carnal 0wnage](http://carnal0wnage.attackresearch.com/)
-* [Skull Security](https://blog.skullsecurity.org/)
-* [Corelan](https://www.corelan.be/)
-* [Harmj0y](http://www.harmj0y.net/blog)
 * [SpiderLabs](https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/)
 * [IOActive](http://blog.ioactive.com/)
-* [HackerOne](https://hackerone.com/blog)
+* [x86Matthew](https://www.x86matthew.com/)
+
