@@ -9,12 +9,13 @@ tags:
 - tips
 - review
 ---
+
+A while ago at my work we got an Enterprise Professional lab subscription to HackTheBox. With this subscription, I had a chance to complete the Dante Pro lab a few months ago, so I thought I'd do a review of it here.
+
 <p align="center">
   <img width="460" height="300" src="https://www.hackthebox.eu/images/press/dante/2.jpg" alt="Dante">
 </p>
 
-
-A while ago at my work we got an Enterprise Professional lab subscription to HackTheBox. With this subscription, I had a chance to complete the Dante Pro lab a few months ago, so I thought I'd do a review of it here.
 
 The Enterprise Pro lab subscription gives you dedicated access to one lab at a time, and seeing that Dante is the "Beginner" lowest difficulty level lab in the Pro labs series, this was the first environment we had provisioned.
 

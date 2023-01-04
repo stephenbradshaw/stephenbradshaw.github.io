@@ -5,4 +5,16 @@
 $sidebar-bg-color: #4175aa;
 $link-color: #41aaaa;
 $sidebar-sticky: false;
+figure {
+	border: 3px #cccccc solid;
+	padding: 10px;
+	margin: 30px;
+}
+figcaption {
+	background-color: black;
+	color: white;
+	font-style: italic;
+	padding: 2px;
+	text-align: center;
+}
 @import "hydeout";
