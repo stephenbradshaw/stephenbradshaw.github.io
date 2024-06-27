@@ -125,7 +125,7 @@ The instructions are fairly bare bones, listing the minimal configuration settin
 
 [Scott's blog post](https://scottctaylor12.github.io/lambda-function-urls.html) and associated [Red Lambda Github repository](https://github.com/scottctaylor12/Red-Lambda) provide some instructions and CloudFormation code to implement a Lambda/Function URL forwarder and C2 system, but if your design is different its helpful to know know to do the Function URL and Lambda setup manually.
 
-1. Take the [Lambda code from Scotts repository](https://github.com/scottctaylor12/Red-Lambda/blob/main/lambda.py). Depending on when you follow these instructions, you can also use [my fork instead]((https://github.com/stephenbradshaw/Red-Lambda/blob/main/lambda.py), thats awaiting PR acceptance into Scott's repository and fixes an issue with proper forwarding of binary responses from the backend C2 server.
+1. Take the [Lambda code from Scotts repository](https://github.com/scottctaylor12/Red-Lambda/blob/main/lambda.py). Depending on when you follow these instructions, you can also use [my fork instead](https://github.com/stephenbradshaw/Red-Lambda/blob/main/lambda.py), thats awaiting PR acceptance into Scott's repository and fixes an issue with proper forwarding of binary responses from the backend C2 server.
 
 2. Create a new Lambda using the Python 3.7 runtime (later versions will not work due to issues with the Python requests module).
 
