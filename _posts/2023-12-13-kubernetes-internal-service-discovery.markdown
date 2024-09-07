@@ -5,6 +5,12 @@ date:   2023-12-13 19:20:00 +1100
 author: Stephen Bradshaw
 tags:
 - Kubernetes
+- pentesting
+- red team
+- service enumeration
+- network enumeration
+- enumeration
+- discovery
 - container
 - service
 - nmap
