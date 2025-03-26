@@ -172,3 +172,4 @@ The architecture looks like the following.
 
 Im intending to keep investigating GCP to see if there are any more ways to use available services to forward for C2, and if I find more I'll do a follow up post to discuss them. Are you aware of any? Let me know!
 
+Also, I will mention at this point, its your responsibility to make sure your use of the GCP platform is in line with the [AUP](https://cloud.google.com/terms/aup?hl=en) and [TOS](https://cloud.google.com/terms/)
