@@ -49,7 +49,7 @@ The **API Config** specifies the configuration of the API. We need to provide an
 For the API Spec file I used a template file `api_forward.yaml` I have added to the Github repository [here](https://github.com/stephenbradshaw/GCPCloudRunC2Forwarder/blob/main/api_forward.yaml). We need to modify two values in the template before uploading it, as follows:
 
 * `API_ID`- change to the `API ID` of the API you create, e.g. `testapi` in my case.
-* `APP_URL` - change to the URL of the Cloud Run service already created that we want to forward traffic to e.g. `https://<SERVICE_NAME>-<12_DIGIT_NUMBER>.<REGION>.run.app`
+* `APP_URL` - change to the URL of the Cloud Run service already created that we want to forward traffic to, e.g. in my case `https://toteslegit-983481224768.us-central1.run.app` was the address of the Cloud Run app I created in [part 1](https://thegreycorner.com/2025/03/26/gcp-service-C2-forwarding.html)
 
 For the **Gateway** section, we need to set a display name (that will appear in the final URL reachable by implants), I used `gateway`, and a region in which to run the service, I chose `us-central1`.
 
@@ -57,8 +57,7 @@ After you hit **Create Gateway** after configuring these details, the associated
 
 The final URL will be accesible from within the Gateways section of your new API once its done deploying, mine was (similar to) `https://gateway-abcdefgh.uc.gateway.dev`.
 
-
-The architecture of this approach like the following.
+The architecture of this approach looks like the following.
 
 <p align="center">
   <img src="/assets/img/c2_architecture_basic_cr_apigw.png" alt="C2 with Cloud Run Fronting">
