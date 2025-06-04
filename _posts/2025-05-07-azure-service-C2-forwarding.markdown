@@ -12,6 +12,7 @@ tags:
 - forwarding
 - container
 - sliver
+- Azure service fronting
 ---
 
 <p align="center">
@@ -26,12 +27,23 @@ If you want some more details on why you might want to do this, check out the li
 [here](/2025/03/26/gcp-service-C2-forwarding.html#what-is-the-purpose-of-c2-fronting).
 
 
-# Azure POC environment
+# Update - Automated deployment of Azure resources
+
+**_Update 4 June 2025_**: In the original version of this post I discussed how to manually setup all of the needed resources for this proof of concept domain fronting test, including basic C2 infrastructure to forward traffic to and the Function App Azure resource and code. The original manual steps are documented below. In doing further tests in Azure however, I have since created Azure Resource Manager templates that can be used to help automate these setup steps.
+
+This inclues a "base" template set to create the "Azure POC environment" of a VPC and VM running Sliver as discussed in the [Manual deployment - Azure POC environment](#manual-deployment---azure-poc-environment) section below. 
+
+It also includes a "functionapp" template set that creates the Azure resources for the Function App and configures them as described in sections [Manual creation of the Azure Function App](#manual-creation-of-the-azure-function-app) and [Manual configuration of the Function App and network security group](#manual-configuration-of-the-function-app-and-network-security-group).
+
+The templates are available [here](https://github.com/stephenbradshaw/AzureC2PocDeployment) including deployment documentation, and are discussed in more detail in a post [here](/2025/06/04/azure_c&c_poc_infra_deployment.html).
+
+
+# Manual deployment - Azure POC environment
 
 Similar to what I did for the [GCP](/tags.html#gcp) POCs discussed in previous posts, I needed some simple C2 infrastructure to forward traffic to.
 
-To this end, I created the following using the Azure Portal, using `North Central US` for regional resources:
-* A resource group `C2VM_group` used to collect all the related infrastructure used for the POC
+To this end, I created the following using the Azure Portal, using `West Central US` (`West US 2`) for regional resources:
+* A resource group `C2VMRG` used to collect all the related infrastructure used for the POC
 * A Virtual Network, with network range `10.0.0.0/16`, with a `default` subnet network with range `10.0.0.0/24` where the C2 VM instance will be attached
 * A Linux virtual machine with the [Sliver](https://github.com/BishopFox/sliver) C2 installed and a public IP address that I could use to access the instance by SSH. The internal IP of this instance was `10.0.0.4`.
 * A network security group associated with the instance, configured with custom rules, restricting SSH traffic to my home IP address only. SSH is the means by which I accessed the instance to configure the Operating System and operate the C2 service.
@@ -39,7 +51,7 @@ To this end, I created the following using the Azure Portal, using `North Centra
 With this basic infrastructure available to forward to, the Function App can be created.
 
 
-# Create the Azure Function App
+# Manual creation of the Azure Function App
 
 The Function App and associated resources needed for the POC can be created using the Azure Portal [here](https://portal.azure.com/#browse/Microsoft.Web%2Fsites/kind/functionapp)
 
@@ -50,7 +62,7 @@ Select `Flex Consumption` as the hosting method and then the following options i
 **Basics**
 
 * Function App Name: Select a function app name. The value you choose must be globally unique and will form part of the URL used to access the app. I chose `mytestfunctionxyz123` as my name.
-* Region: North Central US
+* Region: West Central US
 * Runtime stack: Python 
 * Version: 3.12
 * Instance size: 2048 MB
@@ -86,7 +98,7 @@ Accept the defaults or set tags as required
 Hit `Create` to start the wizards deployment process - it will create the Function App and a few other required services for you.
 
 
-# Configure the Function App and network security group
+# Manual configuration of the Function App and network security group
 
 Once the Function App deployment process is done there are a few config steps we need to complete in the Azure Portal.
 
@@ -95,7 +107,7 @@ In the settings of the newly created Function App, go to the "Environment variab
 It is also necessary to modify the network security group of the C2 VM instance to allow traffic from the network address range of the newly created subnet (`10.0.1.0/24` in my case) to port 80 on the VMinstance.
 
 
-# Deploy
+# Code deployment to the Function App resource
 
 Deployment will require installing and setting up the [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt). We can deploy code to an existing Function App with the CLI using the zip file deployment approach, which uses a command in the format shown below. The command references the resource group and name of the function and the local zip file containing the source code to deploy in the App.
 
@@ -111,10 +123,10 @@ You can the make a zip file `/tmp/dep.zip` with the needed files from the repo l
 zip -r /tmp/dep.zip ./function_app.py ./host.json ./requirements.txt
 ```
 
-In my example case, I did the deployment using the following command, given my resource group of `C2VM_group`, function name `mytestfunctionxyz123` and zip file of `/tmp/dep.zip`.
+In my example case, I did the deployment using the following command, given my resource group of `C2VMRG`, function name `mytestfunctionxyz123` and zip file of `/tmp/dep.zip`.
 
 ```
-az functionapp deployment source config-zip -g C2VM_group -n mytestfunctionxyz123 --src /tmp/dep.zip
+az functionapp deployment source config-zip -g C2VMRG -n mytestfunctionxyz123 --src /tmp/dep.zip
 ```
 
 After deployment, the app was running at `https://mytestfunctionxyz123.azurewebsites.net/`.

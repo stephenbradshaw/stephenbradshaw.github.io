@@ -50,7 +50,7 @@ Now lets look at the two deployment approaches, starting with the unique approac
 
 # Cloud Run Function Deployment using "gcloud functions"
 
-In this deployment approach, we need to use a [Serverless VPC connector](https://cloud.google.com/vpc/docs/serverless-vpc-access) to allow internal traffic from our function to our C2 instance, similar to what we required when we used [Google App Engine in part 1](/2025/03/26/gcp-service-C2-forwarding.html#google-app-engine). Set this up in the same VPC and region as your C2 instance using the GCP web interface [here](https://console.cloud.google.com/networking/connectors/list.  I used the `10.8.0.0/28` unusued network range and called mine `testconnector`. 
+In this deployment approach, we need to use a [Serverless VPC connector](https://cloud.google.com/vpc/docs/serverless-vpc-access) to allow internal traffic from our function to our C2 instance, similar to what we required when we used [Google App Engine in part 1](/2025/03/26/gcp-service-C2-forwarding.html#google-app-engine). Set this up in the same VPC and region as your C2 instance using the GCP web interface [here](https://console.cloud.google.com/networking/connectors/list).  I used the `10.8.0.0/28` unusued network range and called mine `testconnector`. 
 
 Then, if it does not already exist, setup a [firewall rule](https://console.cloud.google.com/net-security/firewall-manager/firewall-policies/list) for the VPC which allows traffic from the VPC connectors private IP address range to port 80 on our C2 host. I handled this by creating a rule to allow all internal traffic from the range 10.0.0.0/8 (which included the IP range assigned to my testconnector VPC connector) to TCP port 80.
 
