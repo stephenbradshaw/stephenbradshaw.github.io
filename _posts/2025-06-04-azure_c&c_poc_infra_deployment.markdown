@@ -79,4 +79,8 @@ Now the network diagram of our environment looks like the following:
 
 If you want to give these templates a try to create your own testing C2 environment in Azure, more detailed deploy documentation is included in [the repository on GitHub](https://github.com/stephenbradshaw/AzureC2PocDeployment). Keep in mind that this configuration is only suitable for testing and development and would need to be modified and made more robust for any sort of real operational use, but even in that case would serve as a decent starting point. 
 
-When you are done with testing, the resources created by the templates can all easily be removed by deleting the entire `C2VMRG` resource group in the [Azure Portal](https://portal.azure.com/#browse/resourcegroups).
+When you are done with testing, the resources created by the templates can all easiler be deleted by deleting the entire `C2VMRG` resource group in the [Azure Portal](https://portal.azure.com/#browse/resourcegroups) or by running the following command:
+
+```
+az group delete --name C2VMRG
+```
