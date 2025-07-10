@@ -73,6 +73,8 @@ $ export PUBLIC_IP=$(curl ipinfo.io/ip)
 $ sed -i "s/<YOUR_IP_ADDRESS_HERE>/$PUBLIC_IP/g" parameters.json
 $ export PUBLIC_KEY=$(cat ~/.ssh/id_ed25519_azure.pub | sed 's/\//\\\//g')
 $ sed -i "s/<YOUR_PUBLIC_KEY_HERE>/$PUBLIC_KEY/g" parameters.json
+$ export DNS_LABEL=dnslabel
+$ sed -i "s/<YOUR_DNS_LABEL_HERE>/$DNS_LABEL/g" parameters.json
 $ az deployment group create --resource-group C2VMRG --template-file template.json --parameters @parameters.json
 ```
 
