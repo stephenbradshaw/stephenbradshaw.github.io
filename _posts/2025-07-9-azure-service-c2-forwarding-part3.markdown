@@ -5,14 +5,10 @@ date:   2025-07-10 15:30:00 +1100
 author: Stephen Bradshaw
 tags:
 - Azure
-- Azure functions
-- Serverless
 - C2
 - domain fronting
 - forwarding
-- container
 - sliver
-- Azure Front Door
 - Azure service fronting
 ---
 
