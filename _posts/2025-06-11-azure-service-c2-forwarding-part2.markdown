@@ -14,6 +14,7 @@ tags:
 - sliver
 - Azure Front Door
 - Azure service fronting
+- redirector
 ---
 
 <p align="center">

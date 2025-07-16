@@ -13,6 +13,7 @@ tags:
 - C2
 - domain fronting
 - forwarding
+- redirector
 ---
 
 Recently I've been looking into options for abusing AWS services to forward HTTP Command and Control (C2) traffic. This post will talk about a number of approaches for this I found discussed on the Internet as well as a few options that I identified myself.
