@@ -36,7 +36,7 @@ This inclues a "base" template set to create the "Azure POC environment" of a VP
 
 It also includes a "functionapp" template set that creates the Azure resources for the Function App and configures them as described in sections [Manual creation of the Azure Function App](#manual-creation-of-the-azure-function-app) and [Manual configuration of the Function App and network security group](#manual-configuration-of-the-function-app-and-network-security-group).
 
-The templates are available [here](https://github.com/stephenbradshaw/AzureC2PocDeployment) including deployment documentation, and are discussed in more de in a post [here](/2025/06/04/azure_c&c_poc_infra_deployment.html).
+The templates are available [here](https://github.com/stephenbradshaw/AzureC2PocDeployment) including deployment documentation, and are discussed in more detail in a post [here](/2025/06/04/azure_c&c_poc_infra_deployment.html).
 
 
 # Manual deployment - Azure POC environment
