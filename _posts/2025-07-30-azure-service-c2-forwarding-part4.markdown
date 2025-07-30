@@ -211,7 +211,7 @@ $ curl $APIGW_URL
 The architecture we have deployed looks something like the following, with two externally accessible endpoints for implant traffic to reach our C2:
 
 <p align="center">
-  <img src="/assets/img/c2_architecture_basic_azure_api.png" alt="C2 with single Azure VM, Function App and Azure API Gateway">
+  <img src="/assets/img/c2_architecture_basic_azure_api_new.png" alt="C2 with single Azure VM, Function App and Azure API Gateway">
 </p>
 
 
