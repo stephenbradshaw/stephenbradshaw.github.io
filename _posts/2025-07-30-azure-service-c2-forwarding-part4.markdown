@@ -22,7 +22,7 @@ Heres the final (for now at least) entry in my series on abusing Azure services 
 
 In this POC I will outline an approach that has an APIM API instance forwarding traffic to an Azure Function App that in turn sits in front of an Azure VM running our C2. The Function App approach was discussed in [part 1](/2025/05/07/azure-service-C2-forwarding.html) of this Azure series, and the approach of adding another Azure service to the front of the Function App chain was also used in [part 2](/2025/06/25/azure-service-c2-forwarding-part2.html) of the series where I talked about Azure Front Door.
 
-In essence this essentially 
+In essence this essentially adds another Internet accessible front end to our C2 setup - allowing both to be used to get traffic into the environment.
 
 I've again updated the [Azure C2 POC base template set](https://github.com/stephenbradshaw/AzureC2PocDeployment) I've been using in my other [Azure entries in this series](/tags.html#azure-service-fronting) to make it easy to setup your own iteration of this POC. 
 
