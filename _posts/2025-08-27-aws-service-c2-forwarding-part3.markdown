@@ -166,7 +166,7 @@ Heres a screenshot
 
 
 **Step 4: Configure instance traffic and scaling**
-* **EC2 security groups**: Pick the group your created for Elastic Beanstalk here
+* **EC2 security groups**: Pick the group you created for Elastic Beanstalk here
 
 
 **Step 5: Configure updates, monitoring, and logging**
