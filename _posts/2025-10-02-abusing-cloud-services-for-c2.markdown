@@ -35,11 +35,15 @@ tags:
   <img width="500" height="500" src="/assets/img/cloud_puppet_master.png" alt="Cloud Puppet Master">
 </p>
 
-Last weekend, I presented at [BSides Canberra](https://www.bsidesau.com.au/) on abusing native cloud services for high reputation redirectors for Command and Control (C2) systems. The talk discussed the high reputation redirector concept, why they are used in Command and Control designs, and talked about a number of different native cloud services from AWS, Azure and GCP that could be used to create these redirectors. The slides from the presesntation are shared [here](https://github.com/stephenbradshaw/pentesting_stuff/blob/master/presentations/Abusing_Cloud_Services_for_C2_slides.pdf), and at some point in the near future the recording of the talk will be released on the [BSides Canberra YouTube channel](https://www.youtube.com/@bsidescanberra9688). I will update the post with a direct link to the talk once its available.
+# Introduction
 
-Given that I have been working on this subject since late 2023, and have all the relevant information scattered across multiple posts here, I thought I would do a single summary post to organise everything and make specific information easier to find.
+Last weekend, I presented at [BSides Canberra](https://www.bsidesau.com.au/) on the topic of abusing native cloud services for Command and Control (C2). The talk discussed the concept of the high reputation redirector, why these are used in Command and Control designs, and listed a number of ways to create these redirectors using native cloud services from AWS, Azure and GCP. 
 
-This post will explain the cloud fronting concept, list the various applicable cloud services that can be used, and will provide a direct link to posts that provides implementation detail for that service. Some of the information below providing high level context or descriptions will be reproduced here from the original posts, so be aware you might see some repeated information that you can skip over once you follow through to the individual entries in the series.
+The slides from the presesntation are shared [here](https://github.com/stephenbradshaw/pentesting_stuff/blob/master/presentations/Abusing_Cloud_Services_for_C2_slides.pdf), and at some point in the near future the recording of the talk will be released on the [BSides Canberra YouTube channel](https://www.youtube.com/@bsidescanberra9688). I will update the post with a direct link to the talk once its available.
+
+Given that I have been working on this subject since late 2023 and the various content I have written is scattered across multiple posts, I thought I would do a single summary post to organise everything and make specific information easier to find.
+
+This post will explain the concept of using a high reputation redirector for C2, will list the various applicable cloud services that can be used, and will provide direct links to detailed posts where applicable. Some of the summary information below will be reproduced here from the original posts, so be aware you might see some repeated information from individual entries in the series.
 
 
 # Why do we use high reputation redirectors in Command and Control designs?
@@ -71,9 +75,7 @@ Here, the basic design has been modified to host the C2 service in a private VPC
 
 # What about domain fronting? An aside....
 
-Something that you will see repeated endlessly if you search on this topic, including in the Cobalt Strike blog post mentioned in the last section, is that you can use the CloudFront Content Delivery Network (CDN) (and sometimes other CDN services) to perform domain fronting for C2 services. 
-
-Back in 2023 when I first started looking into the high reputation redirector concept, I also looked into domain fronting given how many people were talking about the ideas simultaneously.  What follows in this section is reproduced from what I [wrote at the time](/2023/08/30/aws-service-C2-forwarding.html#a-note-on-domain-fronting-and-cloudfront) on the subject, specific to AWS services. Keep in mind I have not done any testing to update this information on domain fronting for GCP or Azure services or to account for changes since 2023, so while the details about how domain fronting works are still accurate, specifics about whether or how it works with particular cloud services may have changed.
+Back in 2023 when I first started looking into the high reputation redirector concept, I also investigated domain fronting given it was always referenced when anyone talked about using CloudFront with C2.  What follows in this section is reproduced from what I [wrote at the time](/2023/08/30/aws-service-C2-forwarding.html#a-note-on-domain-fronting-and-cloudfront) on the subject, specific to AWS services. Keep in mind I have not done any testing to update this information for GCP or Azure services or to account for changes since 2023. Consequently, while the details below about how domain fronting works are still accurate, specifics about whether or how it works with particular cloud services may have changed.
 
 Domain fronting is a technique that attempts to hide the true destination of a HTTP request or redirect traffic to possibly restricted locations by abusing the HTTP routing capabilities of CDNs or certain other complex network environments. For version 1.1 of the protocol, HTTP involves a TCP connection being made to a destination server on a given IP address (normally associated with a domain name) and port, with additional TLS/SSL encryption support for the connection in HTTPS. Over this connection a structured plain text message is sent that requests a given resource and references a server in the `Host` header. Under normal circumstances the domain name associated with the TCP connection and the `Host` header in the HTTP message match.  In domain fronting, the destination for the TCP connection domain name is set to a site that you want to appear to be visiting, and the `Host` header in the HTTP request is set to the location you actually want to visit. Both locations must be served by the same CDN. 
 
@@ -118,36 +120,36 @@ Unfortunately, I'm not aware of any C2 implant that supports specifying the TLS 
 
 # Protection/filtering for the C2 servers HTTP endpoint
 
-When I setup C2 using one of these high reputation as an implant front end, I usually also add in a seperate HTTP proxy service between the cloud service redirector and the C2s HTTP listener. This provides some additional protection to the C2 server from malicious access or attempts to fingerprint the service. The ideal design would have this proxy sitting on its own restricted dedicatd bastion host. However, in the POC designs I have discussed in the majority of the blog posts in this series, I have used a design where I run this proxy on the same host running the C2 server. The proxy is an Apache instance listening on port 80, which will in turn forward _certain_ incoming HTTP traffic on to the C2 HTTP endpoint, which is listening internally on port 8888.
+When I setup C2, I usually also add in a seperate HTTP proxy service before the C2s HTTP listener. This provides some additional protection to the C2 server from malicious access or attempts to fingerprint the service. The ideal design would have this proxy sitting on its own restricted dedicated bastion host. However, for the POC C2 architectures I have discussed in the majority of the blog posts in this series, I run this proxy on the same host running the C2 server to minimise cost and complexity. The proxy I use is an Apache instance listening on port 80, which will in turn forward _certain_ incoming HTTP traffic on to the C2 HTTP endpoint, which is listening on localhost port 8888.
 
-A script for Ubuntu Linux that can be set in a cloud VM's user data instance that will set this up for you using the [Sliver](https://github.com/BishopFox/sliver) C2 server can be found [here](https://github.com/stephenbradshaw/pentesting_stuff/blob/master/setup_scripts/c2_setup.sh). This is the same script that is used in the [deployment templates that I created for the Azure entries in this series](/2025/06/04/azure_c&c_poc_infra_deployment.html).
+A script for Ubuntu Linux that will set this up for you using the [Sliver](https://github.com/BishopFox/sliver) C2 server can be found [here](https://github.com/stephenbradshaw/pentesting_stuff/blob/master/setup_scripts/c2_setup.sh). This is the same script that is used in the [deployment templates that I created for the Azure entries in this series](/2025/06/04/azure_c&c_poc_infra_deployment.html).
 
 The filtering in this design is pretty simple, configured in `/var/www/html/.htaccess` and works in the following manner:
 * Any requests for any file that exists in the Apache web root (`/var/www/html`) will be served directly by Apache - there is a default index page, a robots.txt and a randomly named php script that exists for troubleshooting
 * Any requests for any URL that does not exist in the Apache web root will be forwarded to the C2 endpoint _if_ it comes from a non-bot/automated/command-line user agent, otherwise the request will get a generic 404 response
 
-This is not perfect, and can be refined to filter more stringently based on the HTTP communication profile of a particular C2, but it does help prevent against casual identification of the C2 or _certain_ direct attacks against its implant endpoint, as the robust and tested Apache server receives the web traffic first and does some response header modifications. The use of Apache also gives us an easy and well tested way of setting up a HTTPS listener that forwards traffic as well if we want this.
+This is not perfect, and can be refined to filter more stringently based on the HTTP communication profile of a particular C2, but it does help prevent against casual identification of the C2 or _certain_ direct attacks against its implant endpoint, as the robust and tested Apache server receives the web traffic first and does some response header modifications. The use of Apache also gives us an easy and well tested way of setting up a HTTPS listener for the C2 as well if we want this.
 
 # What characteristics make a service suitable to be used as a high reputation redirector?
 
-So what qualities do we look for in a cloud service that suggests it would be a good candidate for use as a high reputation redirector for C2?
+So what qualities do we look for in a cloud service that makes it a good candidate for use as a high reputation redirector for C2?
 
-Lets define the goal as achieving functional HTTP/S communication for unmodified C2 software. While there are C2 solutions that support all sorts of different communications methods such as [Slack](https://www.praetorian.com/blog/using-slack-as-c2-channel-mitre-attack-web-service-t1102/), [Discord](https://securityintelligence.com/x-force/self-checkout-discord-c2/), [GitHub](https://github.com/MythicC2Profiles/github) and more, I was interested only in services that would allow support for the greatest breadth of C2 software packages using HTTP/S. 
+Lets define the goal as achieving functional HTTP/S communication for unmodified C2 software. While there are C2 solutions that support various custom communication channels such as [Slack](https://www.praetorian.com/blog/using-slack-as-c2-channel-mitre-attack-web-service-t1102/), [Discord](https://securityintelligence.com/x-force/self-checkout-discord-c2/), [GitHub](https://github.com/MythicC2Profiles/github) and more, I was interested in HTTP/S because its commonly used and very well supported by C2 software solutions. 
 
-More specifically, the service needs to have the following characteristics to be a good candidate:
-* Provides the ability to proxy, redirect or forward HTTP/1.1 traffic to a configurable backend. This backend could be a service in a private VPC hosted in the same cloud providers network, or a service accessible more generally over the Internet.
-* Provides a trusted DNS name from the cloud provider. We dont want to have to provide our own custom domain name, so we dont have to worry about aging and building trust for that domain.
-* Ideally, provides a trusted certificate for the cloud provider DNS domain, that will enable HTTPS for you without having to set it up yourself and have the domain appear in certificate transparency logs as a result of creating that certificate yourself using a service such as LetsEncrypt.
-* Supports at least the GET and POST HTTP methods.
-* Supports binary content in the HTTP message body for requests and responses.
-* Supports the ability to send requests and responses uncached.
-* Retains any cookies set by the C2 HTTP server (through the Set-Cookie header).
-* Maintains the URL path and query parameters for all forwarded requests as-is. Some consistent content included at the start of the URL path is fine (e.g. `/api/`), as most C2 servers can deal with this, as long as everything after this section of the path is sent with the same value as sent by the client.
+More specifically, the cloud service must:
+* Provide the ability to proxy, redirect or forward HTTP/1.1 traffic to a configurable backend. This backend could be a service in a private VPC hosted in the cloud providers network, or a service accessible more generally over the Internet.
+* Provide a trusted DNS name from the cloud provider. We dont want to have to provide our own custom domain name that we need to age and build trust for.
+* Ideally, provide a trusted certificate for the cloud provider DNS domain, that will enable HTTPS for you without having to set it up yourself and have the domain appear in certificate transparency logs as a result of creating that certificate yourself using a service such as LetsEncrypt.
+* Support at least the GET and POST HTTP methods.
+* Support binary content in the HTTP message body for requests and responses.
+* Support the ability to send requests and responses uncached.
+* Retain any cookies set by the C2 HTTP server (through the Set-Cookie header).
+* Maintain the URL path and query parameters for all forwarded requests as-is. Some consistent content included at the start of the URL path is fine (e.g. `/api/`), as most C2 servers can deal with this, as long as everything after this section of the path is sent with the same value as sent by the client.
 
 
 # Previous work on using cloud services as high reputation redirectors
 
-A number of other people have discussed creating high reputation using cloud services before I started looking at the subject in 2023. This section will list a few of the posts on the subject that I found, categorised by cloud provider.
+This section will list a few posts from others.
 
 ## AWS 
 
@@ -163,7 +165,7 @@ I found the following approaches discussed online for AWS services:
 I found the following approaches discussed online for Azure services:
 * A number of posts discuss using [Azure Function Apps](https://azure.microsoft.com/en-us/products/functions), including [this](https://web.archive.org/web/20201107235933/https://vincentyiu.com/red-team/attack-infrastructure/azure-apps-for-command-and-control) and [this](https://0xdarkvortex.dev/c2-infra-on-azure/)
 *  [This previously mentioned post](https://0xdarkvortex.dev/c2-infra-on-azure/) also discusses using the (no longer operational) Azure Edge CDN (replaced by [Azure Front Door](https://azure.microsoft.com/en-us/products/cdn)) and the [Azure API Management Service](https://azure.microsoft.com/en-au/products/api-management)
-* Finally we have [this post](https://rosesecurity.gitbook.io/red-teaming-ttps/guides/azure-static-web-application-c2-redirectors) which talks about using an [Azure Static Web App](https://azure.microsoft.com/en-us/products/app-service/static). The discussed approach however, involves a configuration which performs a HTTP 301 client side redirect to the backend server, which allows leakage of the origin C2, something we dont want. The discussed Static Web App service also allows the ability to proxy directly to a backend API service. This would ordinarily be a good way to provide a high reputation redirector, however this API proxying approach does remove any cookies set using the `Set-Cookie` header by the backend API service, meaning it will not work with certain C2 servers. This is why Azure Static Web Apps are not in my list of services for creating high reputation redirectors for C2.
+* Finally we have [this post](https://rosesecurity.gitbook.io/red-teaming-ttps/guides/azure-static-web-application-c2-redirectors) which talks about using an [Azure Static Web App](https://azure.microsoft.com/en-us/products/app-service/static). The discussed approach however, involves a configuration which performs a HTTP 301 client side redirect to the backend C2 server. This unfortunately allows leakage of the C2 origin, something we dont want. The discussed Static Web App service also allows the ability to proxy directly to a backend API service, an idea that is not discussed in the post. This would ordinarily be a good way to provide a high reputation redirector, _however_ this API proxying approach does remove cookies set using the `Set-Cookie` header from the backend API service, meaning it will not work with certain C2 servers. This is why Azure Static Web Apps are not in my list of services for creating high reputation redirectors for C2.
 
 ## GCP
 
@@ -175,9 +177,9 @@ Now we will start to look at the cloud services (AWS, Azure and GCP) that I've p
 
 ## VM
 
-When you create a virtual machine instance in Azure or AWS, and give that instance a public IP address, you can get a cloud provider domain name associated with that public IP. You can create your own proxy instance on that instance that can forward incoming traffic reaching the address to a backend of your choice. This requires that you setup the proxying yourself on the instance, using Apache, Nginx or similar. If you want HTTPS, you need to set this up yourself, you can do this by getting a certificate from LetsEncrypt for the cloud provider domain name that you get assigned and set this up with your proxying service. This will result in your domain name ending up in the certificate transparency logs and receiving some amount of attention in the form of scanning.
+When you create a virtual machine instance in Azure or AWS, and give that instance a public IP address, you can get a cloud provider domain name associated with that public IP. You can create your own proxy service on that instance that can forward incoming traffic reaching the address to a backend of your choice. This requires that you install and configure the proxying software yourself on the instance, using Apache, Nginx or similar. If you want HTTPS, you need to set this up yourself.  One no cost way you can do this is by getting a certificate from LetsEncrypt for the cloud provider domain name and configure this with your proxying software. This will result in your domain name ending up in the certificate transparency logs and receiving some amount of attention in the form of scanning of the domain, so be aware of this consequence any time you need to setup HTTPS yourself.
 
-**Note**: I only have a blog post discussing a POC implementation of the Azure VM approach, but the discussed approach is largely transferrable to AWS as well. In addition, the POC (designed to only provide a working demonstration of the concept) involves running the C2 server on the same VM, with an Apache server running proxying traffic to the C2 HTTP interface listening on `localhost:8888`. This configuration is discussed in some more detail in the section [above](#protectionfiltering-for-the-c2-servers-http-endpoint). I dont recommend running the C2 on the same host that is receiving public traffic for any production use, and would suggest instead running just the proxy on the public VM, and having the C2 elsewhere with traffic forwarding used to . The Apache config in the design forwards communication to `http://backend:8888` (with the address of `backend` defined in the `/etc/hosts` file), and this can be modified to a new destination of your choice.
+**Note**: I only have a blog post discussing a POC implementation of the Azure VM approach, but the discussed approach is largely transferrable to AWS as well. In addition, the POC (simplified for cost and ease of use) involves running the C2 server on the same VM, with an Apache server running proxying traffic to the C2 HTTP interface listening on `localhost:8888`. This configuration is discussed in some more detail in the section [above](#protectionfiltering-for-the-c2-servers-http-endpoint). I dont recommend running the C2 on the same host that is receiving public traffic for any production use, and would suggest instead running just the proxy on the public VM, and having the C2 on its own seperated host. The Apache config in the design forwards communication to `http://backend:8888` (with the address of `backend` defined in the `/etc/hosts` file), and this can be modified to a new destination of your choice.
 
 
 **AWS EC2**:
@@ -192,7 +194,7 @@ When you create a virtual machine instance in Azure or AWS, and give that instan
 
 ## Content Delivery Networks (CDN)
 
-Content Delivery Networks make your content more globally available through points of presence around the world. These servics are designed to just proxy HTTPS, so configuring these services for C2 redirection just involves setting the backend C2 service in the CDN configuration. These CDN services are also designed to cache, which will cause a problem for C2 HTTP communication, so you need to make sure you disable caching.
+Content Delivery Networks make your content more globally available using points of presence around the world. These services are designed to make generic websites more available, so configuring these services for C2 redirection just involves setting the backend C2 service in the CDN configuration. Be aware that these CDN services are also biased towards caching content, which will cause a problem for C2 HTTP communication, so you need to make sure you disable caching to work around this.
 
 
 **[AWS CloudFront](/2023/08/30/aws-service-C2-forwarding.html#cloudfront-distribution-forwarding)**
@@ -207,9 +209,9 @@ Content Delivery Networks make your content more globally available through poin
 
 ## API Services
 
-API Services make it easy to run your HTTP based API and make it available on the Internet. The approach required to configure these services to forward arbitrary HTTP traffic differs depending on the particular service. For AWS, you have options to either send incoming traffic to backend serverless code which can be written to forward the incoming messages, or you can configure direct proxying. For Azure and GCP, you need to provide specifically structured API definitions that will forward traffic from arbitrary routes.
+API Services make it easy to run your HTTP based API and make it available on the Internet. The approach required to configure these services to forward arbitrary HTTP traffic differs depending on the service. For AWS, you have options to either send incoming traffic to backend serverless code which will forward the messages, or you can configure direct proxying. For Azure and GCP, you need to provide specifically structured API definitions that will forward traffic from arbitrary routes.
 
-**Note**: As mentioned, the AWS API Gateway can use two different backend, both approaches of which are discussed in the [same post here](/2023/08/30/aws-service-C2-forwarding.html) linked below. The first approach is [forwarding to a Lambda](/2023/08/30/aws-service-C2-forwarding.html#api-gateway-to-lambda), and the second approach is [direct proxying to a backend HTTP service](/2023/08/30/aws-service-C2-forwarding.html#api-gateway-direct-proxying). Lambdas can also have web traffic directed into them using two different approaches, and are discussed below in the Serverless category.
+**Note**: As mentioned, the AWS API Gateway can use two different backend, both approaches of which are discussed in the [same post here](/2023/08/30/aws-service-C2-forwarding.html). The first approach is [forwarding to a Lambda](/2023/08/30/aws-service-C2-forwarding.html#api-gateway-to-lambda), and the second approach is [direct proxying to a backend HTTP service](/2023/08/30/aws-service-C2-forwarding.html#api-gateway-direct-proxying). Lambdas can also have web traffic directed into them using two different approaches, and are discussed below in the Serverless category.
 
 
 **[AWS API Gateway forwarding to Lambda](/2023/08/30/aws-service-C2-forwarding.html#api-gateway-to-lambda)**
@@ -233,7 +235,7 @@ API Services make it easy to run your HTTP based API and make it available on th
 
 ## Managed Website services
 
-These services make it easier to launch a website on the Internet. In the case of AWS Amplify this website can be a direct backend proxy configuration, for Elastic Beanstalk you can run a custom code based web application that you can write to forward traffic to a chosen backend.
+These services make it easier to launch a website on the Internet. In the case of AWS Amplify this website can be a direct proxy configuration to a backend site, for Elastic Beanstalk you can run a custom web application that can forward traffic to a chosen backend.
 
 **[AWS Amplify](/2023/08/30/aws-service-C2-forwarding.html#aws-amplify-application)**
 * **Domain name**: `<YOUR-LABEL>.<RANDOM>.amplifyapp.com`
@@ -247,9 +249,9 @@ These services make it easier to launch a website on the Internet. In the case o
 
 ## Container execution services
 
-These services make it easier to run a container and make it accessible on the Internet for web traffic. To use this for C2 redirection, we run a [custom container similar to this](https://github.com/stephenbradshaw/HTTPForwardContainer) that will forward traffic to a configured backend. The Cloud Run service also operates as a Serverless service - if you provide it a container it runs the container, if you provide it code it will convert that to a container for you and run it.
+These services make it easier to run a container and make it accessible on the Internet for web traffic. To use this for C2 redirection, we can run a custom container similar to [this](https://github.com/stephenbradshaw/HTTPForwardContainer) that will forward traffic to a configured backend. The GCP Cloud Run service mentioned in this section also operates as a Serverless service, so will be listed in both sections - if you provide it a container it runs the container, if you provide it code it will convert that to a container for you and run it.
 
-**Note**: The [GCP Cloud Run post](/2025/04/23/gcp-service-C2-forwarding-part-3.html) only discusses implementation using the Serverless code approach.
+**Note**: The GCP Cloud Run [post](/2025/04/23/gcp-service-C2-forwarding-part-3.html) I have written only discusses implementation using the Serverless code approach.
 
 
 **[AWS AppRunner](/2025/08/20/aws-service-c2-forwarding-part2.html)**
@@ -269,9 +271,9 @@ These services make it easier to run a container and make it accessible on the I
 
 ## Serverless code execution services
 
-Serverless code execution services allow you to provide a bit of code that the cloud provider will wrap in a lightweight VM or container that is managed for you. This will then be made available to receive web traffic at a cloud provider domain name.  The code used in the POCs I discuss below are variants on a Python app that rewrites HTTP requests. [Flask](https://flask.palletsprojects.com/) is used for receiving web requests where this is not handled by the parent framework, and either [requests](https://requests.readthedocs.io/) or the Python standard [HTTP](https://docs.python.org/3/library/http.html) and [SSL](https://docs.python.org/3/library/ssl.html) libraries are used to replay the requests to the backend C2 service.
+Serverless code execution services allow you to provide a bit of code that the cloud provider will wrap in a lightweight VM or container that will run without you having to maintain the host. This will then be made available to receive web traffic at a cloud provider domain name.  The code used in the POCs I discuss below are variants on a Python app that rewrites HTTP requests. [Flask](https://flask.palletsprojects.com/) is used for receiving web requests where this is not handled by the parent framework, and either [requests](https://requests.readthedocs.io/) or the Python standard [HTTP](https://docs.python.org/3/library/http.html) and [SSL](https://docs.python.org/3/library/ssl.html) libraries are used to replay the requests to the backend C2 service. 
 
-**Note**: Traffic can be directed into a Lambda using either a Function url or an API Gateway instance. 
+**Note**: The Lambda function code referred to in the post below is an older version that requires the Python [requests](https://requests.readthedocs.io/)  module which used to be included in the Lambda Python runtime environment in older versions, but now needs to be added alongside your code in a layer. My updated version of the Lambda code available [here](https://github.com/stephenbradshaw/pentesting_stuff/blob/master/redirector_lambda/lambda_function_updated.py) uses the Python standard http and ssl libraries, and can be used with the latest available Python Lambda runtime version without having to add any additional modules.
 
 **[AWS API Gateway forwarding to Lambda](/2023/08/30/aws-service-C2-forwarding.html#api-gateway-to-lambda)**
 * **Domain name**: `<RANDOM>.execute-api.<REGION>.amazonaws.com`
