@@ -38,26 +38,28 @@ In this blog post, I discuss how I was able to get Python to communicate directl
 
 # Enabling communication with the gRPC endpoint using Python
 
-As mentioned in the introduction, the Istio authoriser services can communicate using either gRPC or HTTP. The HTTP communication method just involve directly sending the request to filter to the endpoint, but many authoriser services (including the particular one I wanted to test) do not support that method. The gRPC communication method involves encapsulating the HTTP request into a specific [protobuf](https://protobuf.dev/) message and sending this to the authoriser using gRPC (essentially HTTP 2.0 with extra headers and protobuf messages). This is a protocol I have previously discussed on my blog with regard to communicating to the containerd socket, as mentioned [here](/2025/02/19/containerd-socket-exploitation-part-2.html#understanding-and-exploring-the-proto-service-definition-files-and-parsing-protobuf-messages). 
+As mentioned in the introduction, the Istio authoriser services can communicate using either gRPC or HTTP. The HTTP communication method involves directly sending the request to filter to the endpoint, but many authoriser services (including the particular one I wanted to test) do not support that method. The gRPC communication method involves encapsulating the HTTP request into a specific [protobuf](https://protobuf.dev/) message and sending this to the authoriser using gRPC (essentially HTTP 2.0 with extra headers and protobuf messages). This is a protocol I have previously discussed on my blog in relation to the containerd socket [here](/2025/02/19/containerd-socket-exploitation-part-2.html#understanding-and-exploring-the-proto-service-definition-files-and-parsing-protobuf-messages). 
 
-Getting the particular messages working in Python code is quite fiddly, and involves grabbing `.proto` definition files for multiple message types from six different git repositories and compiling them to Python equivalents locally. To make it a bit easier to reproduce I wrote a [script](https://github.com/stephenbradshaw/pentesting_stuff/blob/master/protobuf/external_authoriser_dependency_adder.sh) to automate the dependency process on *nix systems. The following discusses the setup process.
+Getting the particular messages required for Istio authoriser communication working in Python code is quite fiddly, and involves grabbing `.proto` definition files for multiple message types from six different git repositories and compiling them to Python equivalents locally. This will create a directory tree of Python modules that implement the multiple different message types, that you can then add to your Python path in order to create the related protobuf message types in Python code.
 
-First install the required Python modules.  On systems with a managed Python install (e.g. Ubuntu) you may need to do this in a venv as the inbuilt `validate` module will break loading of the protobuf module with the same name. In that case do this first.
+To make it a bit easier to set this up I wrote a [script](https://github.com/stephenbradshaw/pentesting_stuff/blob/master/protobuf/external_authoriser_dependency_adder.sh) to automate the dependency setup process on *nix systems. The following discusses how to use this script.
+
+First install the general use protobuf and gRPC Python modules.  On systems with a managed Python install (e.g. Ubuntu) you may need to do this in a venv as the inbuilt `validate` module will break loading of the protobuf module with the same name. In that case you should run something like the following first to setup your virtual environment.
 
 ```
 python -m venv .venv
 source .venv/bin/activate
 ```
 
-Then install the Python modules.
+Now install the protobuf and gRPC Python modules.
 
 ```
 pip install protobuf grpcio-tools
 ```
 
-Then install the protobuf command line compiler `protoc` and make sure its in your path. This can be obtained from [here](https://github.com/protocolbuffers/protobuf/releases).
+Now install the protobuf command line compiler `protoc` and make sure its in your path. The binaries for various different platforms and architectures can be obtained from [here](https://github.com/protocolbuffers/protobuf/releases) - grab, extract and put the `protoc` binary in your path.
 
-Now you are ready to run my script to setup the dependant Python protobuf modules. The script will download the necessary repositories to `/tmp/code`, copy the required protobuf file structures to the `protoc_build` in the pwd and compile the needed files to Python format. 
+Now you are ready to run my script to setup the dependant Python protobuf modules. The script will download the necessary Git repositories to `/tmp/code`, copy the required protobuf file/directory structures from those repositories to the `protoc_build` in the present working directory, and compile the many `.proto` files to Python format. 
 
 ```
 wget https://raw.githubusercontent.com/stephenbradshaw/pentesting_stuff/refs/heads/master/protobuf/external_authoriser_dependency_adder.sh
@@ -65,7 +67,7 @@ chmod +x external_authoriser_dependency_adder.sh
 cd protoc_build
 ```
 
-The script will show a number of errors during the compilation phase, which is *usually* fine as a number of uneeded protobuf wont compile with the specific files the script downloads. As long as you end up with a few hundred files matching the pattern `*_pb2.py` in the `protoc_build` directory structure you are likely ok. Check like so:
+The script will show a number of errors during the compilation phase, which is *usually* fine as a number of uneeded protobuf files are included in the directories copied from git and these are missing some other dependencies we have not downloaded. As long as you end up with a few hundred files matching the pattern `*_pb2.py` in the `protoc_build` directory structure you are likely ok. Check like so to see how many matching files you have, and if you have a similar number to the below you should have whats required:
 
 ```
 find . -iname "*_pb2.py" | wc -l
@@ -73,7 +75,7 @@ find . -iname "*_pb2.py" | wc -l
 ```
 
 
-From this point, any Python script you write to communicate with the gRPC authoriser endpoint will need to be run from within this `protoc_build` folder and will need to include the following to ensure that the Python path is modified to ensure the needed modules are loaded from this directory structure. There are more detailed full working Python script examples for two public authoriser programs using this code below in this post.
+From this point, any Python script you write to communicate with the gRPC authoriser endpoint will need to be run from within this `protoc_build` folder. You will also need to include environment modification code in your scripts similar to the following to ensure that the Python loader will look in the current directory when trying to find the protobuf message definitions. The example scripts included later in this post include this snippet.
 
 ```
 import sys
@@ -109,7 +111,7 @@ Run the server:
 2025/12/31 14:43:28 Starting HTTP server at [::]:8000
 ```
 
-Note from the above that this service is running both a gRPC and a HTTP endpoint. Communication with the HTTP endpoint on port 8000 is very straightforward - we can do it using curl. Below we can see both the request and the response from the authoriser service, which does include some additional header values. 
+Note from the above that this service is running both a gRPC and a HTTP endpoint. Communication with the HTTP endpoint on port 8000 is very straightforward - we can do it using curl. Below we can see both the request and the (successful) response from the authoriser service, which does include in its response some additional headers to insert into the request when it is passed by the Istio gateway to its actual destination in the cluster. 
 
 ```
 curl -v -H'x-ext-authz: allow' http://127.0.0.1:8000/
@@ -187,7 +189,7 @@ curl  -H'x-ext-authz: allow' http://test.example.com/
 ```
 
 
-Running this prints out the following interpreted protobuf response from the server.
+Running this prints out the following interpreted protobuf response from the authoriser server. The additional headers that the authoriser server is instructing the Itio gateway to add to the request when it is passed on are a bit clearer in this example.
 
 ```
 Client received:
@@ -215,16 +217,16 @@ ok_response {
 }
 ```
 
-The following log entry is output from the server.
+The following log entry is output from the server console output.
 
 ```
 2025/12/31 16:21:33 [gRPCv3][allowed]: test.example.com/, attributes: destination:{address:{socket_address:{port_value:80}}}  request:{http:{method:"GET"  headers:{key:"Host"  value:"test.example.com"}  headers:{key:"x-ext-authz"  value:"allow"}  path:"/"  host:"test.example.com"  scheme:"http"}}
 ```
 
 
-As you might be able to tell, this reference authorization server is essentially configured to "allow" HTTP requests with the `x-ext-authz` header set to a value of `allow`, and when such a request is received by the associated Istio gateway it will allow it and add the listed header values in the response.
+As you might be able to tell, this reference authorization server is essentially configured to "allow" HTTP requests with the `x-ext-authz` header set to a value of `allow`, and when such a request is received by the associated Istio gateway it will authorise it for routing and add the listed header values in the response.
 
-Lets modify the following line in our script:
+In order to see what a deny response looks like, lets modify the following line in our script:
 
 ```
 attributecontext.request.http.headers["x-ext-authz"] = "allow"
@@ -319,7 +321,7 @@ Now we can run the server:
 
 This server only has the gRPC endpoint, listening now at port `50051`.
 
-Our test script now looks like the following, modified for the new port and the new authorisation configuration.
+Our test script for communicating with this server looks like the following, modified from the previous example for the new port and the new authorisation configuration.
 
 ```
 #!/usr/bin/env python
@@ -400,7 +402,7 @@ Now lets change the following value in the script to a new value to see a deny r
 attributecontext.request.http.headers["authorization"] = "Bearer bob"
 ```
 
-Try the following:
+Try the following modification:
 
 ```
 attributecontext.request.http.headers["authorization"] = "Bearer john"
@@ -424,6 +426,6 @@ denied_response {
 
 # Conclusion
 
-While these are some very simple examples, hopefully this was enough information to give anyone reading a good starting point for doing this type of work themselves. Example code supporting this post is [here](https://github.com/stephenbradshaw/pentesting_stuff/tree/master/protobuf)
+While these are some very simple examples of Istio authoriser servers, hopefully this post provided enough information to give anyone reading a good starting point for doing their own assessments on more complicated Istio authoriser servers. Example code supporting this post is [here](https://github.com/stephenbradshaw/pentesting_stuff/tree/master/protobuf)
 
 
